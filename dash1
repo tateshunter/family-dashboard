@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f0f4f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 { color: #2a5d84; margin-bottom: 1rem; }
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      width: 100%;
+      max-width: 1000px;
+    }
+    .widget {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .widget h2 {
+      font-size: 1.2rem;
+      color: #406e34;
+      margin-bottom: 0.5rem;
+    }
+    ul { padding-left: 1.2rem; }
+    input, textarea {
+      width: 100%;
+      padding: 0.4rem;
+      margin: 0.2rem 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 0.4rem 0.8rem;
+      background: #2a5d84;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .weather {
+      font-size: 1rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>🏡 Family Dashboard</h1>
+  <div class="dashboard">
+    <div class="widget">
+      <h2>🔹 Chore Tracker</h2>
+      <ul id="choreList"></ul>
+      <input type="text" id="choreInput" placeholder="Add a chore...">
+      <button onclick="addChore()">Add Chore</button>
+    </div>
+
+    <div class="widget">
+      <h2>📅 Calendar Notes</h2>
+      <textarea id="calendarNotes" rows="5" placeholder="Write reminders or events..."></textarea>
+      <button onclick="saveNotes()">Save Notes</button>
+    </div>
+
+    <div class="widget">
+      <h2>✍️ Shared Notes</h2>
+      <textarea id="sharedNotes" rows="5" placeholder="Write anything here..."></textarea>
+      <button onclick="saveShared()">Save Notes</button>
+    </div>
+
+    <div class="widget">
+      <h2>☀️ Weather</h2>
+      <div class="weather" id="weatherBox">Loading weather...</div>
+    </div>
+  </div>
+
+  <script>
+    // Load from localStorage
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedChores = JSON.parse(localStorage.getItem("chores")) || [];
+      savedChores.forEach(c => addChore(c));
+
+      document.getElementById('calendarNotes').value = localStorage.getItem("calendarNotes") || "";
+      document.getElementById('sharedNotes').value = localStorage.getItem("sharedNotes") || "";
+
+      getWeather();
+    });
+
+    function addChore(text = null) {
+      const choreInput = document.getElementById("choreInput");
+      const list = document.getElementById("choreList");
+      const value = text || choreInput.value.trim();
+      if (!value) return;
+
+      const li = document.createElement("li");
+      li.textContent = value;
+      li.onclick = () => {
+        li.remove();
+        saveChores();
+      };
+      list.appendChild(li);
+
+      if (!text) choreInput.value = "";
+      saveChores();
+    }
+
+    function saveChores() {
+      const list = Array.from(document.querySelectorAll("#choreList li"))
+                        .map(li => li.textContent);
+      localStorage.setItem("chores", JSON.stringify(list));
+    }
+
+    function saveNotes() {
+      localStorage.setItem("calendarNotes", document.getElementById("calendarNotes").value);
+    }
+
+    function saveShared() {
+      localStorage.setItem("sharedNotes", document.getElementById("sharedNotes").value);
+    }
+
+    function getWeather() {
+      fetch('https://wttr.in/?format=3')
+        .then(res => res.text())
+        .then(data => {
+          document.getElementById("weatherBox").textContent = data;
+        })
+        .catch(() => {
+          document.getElementById("weatherBox").textContent = "Could not load weather.";
+        });
+    }
+  </script>
+</body>
+</html>
